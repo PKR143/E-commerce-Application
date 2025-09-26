@@ -1,6 +1,6 @@
-package com.java.jwt.model;
+package com.java.jwt.dto;
 
-public class AuthenticationResponse {
+public class AuthenticationResponse implements Response{
 
     private final String jwt;
 
