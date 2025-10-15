@@ -15,7 +15,7 @@ public class UserResponse implements Response{
 
     public UserResponse(User user){
         this.id = user.getId();
-        this.username = user.getUserName();
+        this.username = user.getUsername();
         this.name = user.getFirstName()+" "+user.getLastName();
     }
 

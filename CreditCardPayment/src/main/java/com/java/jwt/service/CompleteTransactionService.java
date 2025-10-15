@@ -12,7 +12,6 @@ import com.java.jwt.exception.PaymentException;
 import com.java.jwt.repository.CardRepository;
 import com.java.jwt.repository.TransactionRepo;
 import com.java.jwt.util.TxnUtil;
-import com.twilio.twiml.voice.Sms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,9 @@ public class CompleteTransactionService {
 
     @Autowired
     SmsService smsService;
+
+    @Autowired
+    PubSubService pubSubService;
 
     private ExecutorService executorService = Executors.newFixedThreadPool(20);
 
@@ -73,7 +75,7 @@ public class CompleteTransactionService {
                 throw new PaymentException("Transaction status must be initiated and status code must be 0");
             }
 
-            Optional<UserCartDetailsEntity> cartOpt = cartRepo.findById(txnEntity.getUserName());
+            Optional<UserCartDetailsEntity> cartOpt = cartRepo.findById(txnEntity.getUsername());
 
             //validate the otp
             if (otp == null || otp.isEmpty()) {
@@ -119,7 +121,9 @@ public class CompleteTransactionService {
             logger.info(txnId + " transaction successful");
             txnEntity.setStatusCode(TxnUtil.SUCCESS);
             txnEntity.setStatus("SUCCESS");
+            txnEntity.setTransactionDate(new Date());
             txnRepo.save(txnEntity);
+
 
             if(cartOpt.isEmpty()){
                 logger.info("Cart details is not available fro the username");
@@ -127,6 +131,17 @@ public class CompleteTransactionService {
 
             }
             UserCartDetailsEntity cartDetailsEntity = cartOpt.get();
+            //set transaction event
+            TransactionEvent event = mapToTransactionEvent(txnEntity, cartDetailsEntity.getItems());
+
+            executorService.submit(()-> {
+                try {
+                    pubSubService.publishMessage(event);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
             //make the cart empty and
             CartDetails cartDetails = mapToCartDetails(cartDetailsEntity);
             cartDetailsEntity.setAmount(0D);
@@ -155,6 +170,20 @@ public class CompleteTransactionService {
             throw e;
         }
 
+    }
+    private TransactionEvent mapToTransactionEvent(TransactionStatusEntity status, List<ProductDetailsEntity> items) {
+        return TransactionEvent.builder()
+                .txnId(status.getTxnId())
+                .username(status.getUsername())
+                .items(items)
+                .amount(status.getRequestAmount())
+                .mobileNum(status.getMobileNo())
+                .mailId(status.getMailId())
+                .orderDate(status.getTransactionDate())
+                .address(status.getAddress())
+                .status(status.getStatus())
+                .statusCode((long) status.getStatusCode())
+                .build();
     }
 
     private CartDetails mapToCartDetails(UserCartDetailsEntity cartDetailsEntity) {

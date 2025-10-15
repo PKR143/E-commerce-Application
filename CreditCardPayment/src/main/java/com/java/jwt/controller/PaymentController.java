@@ -29,7 +29,7 @@ public class PaymentController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     @PostMapping("/doPayment")
-    public ResponseEntity<?> doPayment(@RequestBody @Valid TxnRequest request)throws PaymentException {
+    public ResponseEntity<?> doPayment(@RequestBody @Valid TxnRequest request)throws PaymentException,RuntimeException {
         return service.doPayment(request);
     }
 

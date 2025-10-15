@@ -1,16 +1,12 @@
 package com.java.jwt.service;
 
-import com.java.jwt.entity.CardDetailsEntity;
-import com.java.jwt.entity.TransactionStatusEntity;
-import com.java.jwt.entity.User;
-import com.java.jwt.entity.UserCartDetailsEntity;
+import com.java.jwt.entity.*;
 import com.java.jwt.exception.PaymentException;
 import com.java.jwt.dto.*;
 import com.java.jwt.repository.CardRepository;
 import com.java.jwt.repository.CartRepository;
 import com.java.jwt.repository.TransactionRepo;
 import com.java.jwt.repository.UserRepository;
-import com.java.jwt.util.CardUtil;
 import com.java.jwt.util.TxnUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +20,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 public class OrderServiceIMpl implements OrderService{
@@ -63,7 +57,7 @@ public class OrderServiceIMpl implements OrderService{
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceIMpl.class);
 
     @Override
-    public ResponseEntity<?> doPayment(TxnRequest request) throws PaymentException {
+    public ResponseEntity<?> doPayment(TxnRequest request) throws PaymentException, RuntimeException {
 //        return ResponseEntity.ok(new GeneralResponse(new OrderResponse("Payment API is Running"),1L,"OK"));
 
         logger.info("---------------payment request received---------------");
@@ -78,7 +72,7 @@ public class OrderServiceIMpl implements OrderService{
                 throw new PaymentException("Card is not registered");
             }
             CardDetailsEntity existCardEntity = existCard.get();
-            String username = existCardEntity.getUserName();
+            String username = existCardEntity.getUsername();
             User exists = userRepo.findByUserName(username);
             if(exists == null){
                 logger.info("requested username not exists in db");
@@ -168,7 +162,7 @@ public class OrderServiceIMpl implements OrderService{
             //initiate the transaction
             Long txnId = generateId();
             status.setTxnId(txnId);
-            status.setUserName(username);
+            status.setUsername(username);
             status.setRequestAmount(requestAmount);
             status.setCardNumber(request.getCardNumber());
             status.setCvv(request.getCvv());
@@ -183,10 +177,10 @@ public class OrderServiceIMpl implements OrderService{
             status.setAddress(existCardEntity.getAddress());
             status.setMailId(existCardEntity.getMailId());
             status.setMobileNo(request.getMobileNo());
+            status.setTransactionDate(new Date());
 
             status.setStatusCode(TxnUtil.INITIATED);
             status.setStatus("INITIATED");
-
 
             txnRepo.save(status);
             logger.info("transaction initiated with txn id: {}",txnId);
@@ -241,11 +235,6 @@ public class OrderServiceIMpl implements OrderService{
 
 
     }
-
-
-
-
-
     public Long generateId(){
 
         Date dNow = new Date();
@@ -271,11 +260,11 @@ public class OrderServiceIMpl implements OrderService{
         try{
             logger.info("validating card details");
 
-            if(isNullOrEmpty(card.getUserName())){
+            if(isNullOrEmpty(card.getUsername())){
                 logger.info("username is null");
                 throw new PaymentException("username can't be null or empty");
             }
-            User exists = userRepo.findByUserName(card.getUserName());
+            User exists = userRepo.findByUserName(card.getUsername());
             if(exists == null){
                 logger.info("username not exist in DB");
                 throw new PaymentException("Username not exists, please try with valid username");
@@ -319,7 +308,7 @@ public class OrderServiceIMpl implements OrderService{
         }
         return CardDetailsEntity.builder()
                 .cardNumber(request.getCardNumber())
-                .userName(request.getUserName())
+                .username(request.getUsername())
                 .cvv(request.getCvv())
                 .expiryMonth(request.getExpiryMonth())
                 .expiryYear(request.getExpiryYear())

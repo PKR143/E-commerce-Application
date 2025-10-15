@@ -15,7 +15,7 @@ public class CardDetailsEntity {
     @Id
     private String cardNumber;
 
-    private String userName;
+    private String username;
     private String cvv;
     private String expiryMonth;
     private String expiryYear;

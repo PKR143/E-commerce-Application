@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +21,7 @@ public class TransactionStatusEntity {
 
     @Id
     private Long txnId;
-    private String userName;
+    private String username;
     private Double requestAmount;
     private String cardNumber;
     private String cvv;
@@ -36,6 +38,7 @@ public class TransactionStatusEntity {
     private String mobileNo;
     private String otp;
     private String otpCreatedTime;
+    private Date transactionDate;
 
     private Integer statusCode;
     private String status;

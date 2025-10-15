@@ -1,6 +1,5 @@
 package com.java.jwt.entity;
 
-import com.java.jwt.util.AuthProviderType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +11,7 @@ import lombok.*;
 @Table(name = "user_entity")
 public class  User {
     @Column( name = "user_id")
-    private String id  ;
+    private String id;
     private String firstName ;
     private String lastName;
     private String mail;
@@ -20,7 +19,7 @@ public class  User {
     private String address;
     @Id
     @Column(unique = true )
-    private String userName  ;
+    private String username;
     private String password ;
     private String role ;
 

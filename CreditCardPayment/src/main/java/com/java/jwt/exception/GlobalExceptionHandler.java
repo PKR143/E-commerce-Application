@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import io.jsonwebtoken.security.SignatureException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,11 @@ public class GlobalExceptionHandler {
         logger.info("handling SignatureException");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error","Invalid JWT signature"));
+    }
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<?> handleIOException(IOException e){
+        logger.info("handling IO Exception");
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new GeneralResponse(null, -1L, "Something went wrong, please try again!"));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> Exception(Exception e){

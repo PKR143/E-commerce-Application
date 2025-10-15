@@ -87,7 +87,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
 
-        User exist = userRepository.findByUserName(user.getUserName());
+        User exist = userRepository.findByUserName(user.getUsername());
 
         if(exist != null){
             logger.info("Username already exists");

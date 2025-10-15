@@ -16,7 +16,7 @@ public class PaymentDueEntity {
     @Id
     private String cardNumber;
 
-    private String userName;
+    private String username;
     private String cvv;
     private String cardHolderName;
     private String bankName;

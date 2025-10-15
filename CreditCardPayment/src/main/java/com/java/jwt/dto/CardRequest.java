@@ -18,7 +18,7 @@ public class CardRequest {
 
     @NotBlank(message = "User name is required")
     @Size(max = 100, message = "User name must be at most 100 characters")
-    private String userName;
+    private String username;
 
     @NotBlank(message = "CVV is required")
     @Pattern(regexp = "\\d{3,4}", message = "CVV must be 3 or 4 digits")
